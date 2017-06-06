@@ -419,6 +419,13 @@ function Get-DefinitionParameterType
         $ReferenceParameterValue = $ParameterJsonObject.'$ref'        
         $ReferenceTypeName = Get-CSharpModelName -Name $ReferenceParameterValue.Substring( $( $ReferenceParameterValue.LastIndexOf('/') ) + 1 )
         $ParameterType = $DefinitionTypeNamePrefix + $ReferenceTypeName
+    }    
+    elseif ((Get-Member -InputObject $ParameterJsonObject -Name 'Schema') -and ($ParameterJsonObject.Schema) -and
+            (Get-Member -InputObject $ParameterJsonObject.Schema -Name '$ref') -and ($ParameterJsonObject.Schema.'$ref') )
+    {
+        $ReferenceParameterValue = $ParameterJsonObject.Schema.'$ref'
+        $ReferenceTypeName = Get-CSharpModelName -Name $ReferenceParameterValue.Substring( $( $ReferenceParameterValue.LastIndexOf('/') ) + 1 )
+        $ParameterType = $DefinitionTypeNamePrefix + $ReferenceTypeName
     }
     else
     {

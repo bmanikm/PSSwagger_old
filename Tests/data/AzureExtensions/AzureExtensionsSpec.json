@@ -562,6 +562,89 @@
                     }
                 }
             }
+        },
+        "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Search/searchServices/{searchServiceName}": {
+            "put": {
+                "tags": [
+                    "Services"
+                ],
+                "operationId": "SearchServices_CreateOrUpdate",
+                "description": "Creates or updates a Search service in the given resource group. If the Search service already exists, all properties will be updated with the given values.",
+                "externalDocs": {
+                    "url": "https://aka.ms/search-manage"
+                },
+                "parameters": [
+                    {
+                        "name": "searchServiceName",
+                        "in": "path",
+                        "required": true,
+                        "type": "string",
+                        "description": "The name of the Azure Search service to create or update. Search service names must only contain lowercase letters, digits or dashes, cannot use dash as the first two or last one characters, cannot contain consecutive dashes, and must be between 2 and 60 characters in length. Search service names must be globally unique since they are part of the service URI (https://<name>.search.windows.net). You cannot change the service name after the service is created."
+                    },
+                    {
+                        "name": "service",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/SearchService"
+                        },
+                        "description": "The definition of the Search service to create or update."
+                    },
+                    {
+                        "name": "port",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Port"
+                        },
+                        "description": "port parameter description."
+                    },
+                    {
+                        "name": "IotHubProperties",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/IotHubProperties"
+                        },
+                        "description": "IotHubProperties parameter description."
+                    },
+                    {
+                        "name": "SkuOnPath",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Sku"
+                        },
+                        "description": "The SKU of the Search Service, which determines price tier and capacity limits."
+                    },
+                    {
+                        "$ref": "#/parameters/ApiVersionParameter"
+                    },
+                    {
+                        "$ref": "#/parameters/SubscriptionIdParameter"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The existing service definition was successfully updated. If you changed the number of replicas or partitions, the scale operation will happen asynchronously. You can periodically get your service definition and monitor progress via the provisioningState property.",
+                        "schema": {
+                            "$ref": "#/definitions/SearchService"
+                        }
+                    },
+                    "201": {
+                        "description": "If you requested creation of a free Search service, the service is now provisioned and ready to use, subject to DNS propagation delay. For other SKU types, provisioning happens asynchronously. You can periodically get your service definition and monitor progress via the provisioningState property.",
+                        "schema": {
+                            "$ref": "#/definitions/SearchService"
+                        }
+                    },
+                    "default": {
+                        "description": "HTTP 400 (Bad Request): The given service name or service definition is invalid; See the error code and message in the response for details. HTTP 404 (Not Found): The subscription or resource group could not be found. HTTP 409 (Conflict): The specified subscription is disabled.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -659,6 +742,290 @@
                 }
             },
             "description": "Output of check name availability API."
+        },
+        "OperationsMonitoringProperties": {
+            "description": "The operations monitoring properties for the IoT hub. The possible keys to the dictionary are Connections, DeviceTelemetry, C2DCommands, DeviceIdentityOperations, FileUploadOperations.",
+            "type": "object",
+            "properties": {
+                "events": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "enum": [
+                            "None",
+                            "Error",
+                            "Information",
+                            "Error, Information"
+                        ],
+                        "description": "The operations monitoring level.",
+                        "type": "string",
+                        "x-ms-enum": {
+                            "name": "OperationMonitoringLevel",
+                            "modelAsString": true
+                        }
+                    }
+                },
+                "events2": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "enum": [
+                            "None",
+                            "Error",
+                            "Information",
+                            "Error, Information"
+                        ],
+                        "description": "The operations monitoring level.",
+                        "type": "string",
+                        "x-ms-enum": {
+                            "name": "OperationMonitoringLevel2",
+                            "modelAsString": false
+                        }
+                    }
+                }
+            }
+        },
+        "IotHubProperties": {
+            "description": "The properties of an IoT hub.",
+            "type": "object",
+            "properties": {
+                "provisioningState": {
+                    "description": "The provisioning state.",
+                    "type": "string",
+                    "readOnly": true
+                },
+                "hostName": {
+                    "description": "The name of the host.",
+                    "type": "string",
+                    "readOnly": true
+                },
+                "enableFileUploadNotifications": {
+                    "description": "If True, file upload notifications are enabled.",
+                    "type": "boolean"
+                },
+                "comments": {
+                    "description": "Comments.",
+                    "type": "string"
+                },
+                "operationsMonitoringProperties": {
+                    "$ref": "#/definitions/OperationsMonitoringProperties"
+                },
+                "features": {
+                    "description": "The capabilities and features enabled for the IoT hub.",
+                    "enum": [
+                        "None",
+                        "DeviceManagement"
+                    ],
+                    "type": "string",
+                    "x-ms-enum": {
+                        "name": "Capabilities",
+                        "modelAsString": true
+                    }
+                }
+            }
+        },
+        "MonitoringState": {
+            "description": "Used to specify if a resources is monitored or discovered.",
+            "type": "string",
+            "enum": [
+                "monitored",
+                "discovered"
+            ],
+            "x-ms-enum": {
+                "name": "MonitoringState",
+                "modelAsString": false
+            }
+        },
+        "Port": {
+            "description": "A port resource represents a server port on a machine. The port may be actively *monitored*, i.e., a Dependency Agent is running on its machine, or *discovered*, i.e., its existence was inferred by observing the data stream from monitored machines. A port is live during an interval of time, if that port had associated activity during (parts) of that interval.",
+            "x-ms-discriminator-value": "port",
+            "properties": {
+                "properties": {
+                    "x-ms-client-flatten": true,
+                    "type": "object",
+                    "description": "Resource properties.",
+                    "properties": {
+                        "monitoringState": {
+                            "$ref": "#/definitions/MonitoringState",
+                            "description": "Specifies whether the port is actively monitored or discovered."
+                        },
+                        "displayName": {
+                            "type": "string",
+                            "description": "Name to use for display purposes."
+                        },
+                        "ipAddress": {
+                            "type": "string",
+                            "description": "IP address associated with the port. At present only IPv4 addresses are supported."
+                        },
+                        "portNumber": {
+                            "type": "integer",
+                            "format": "int32",
+                            "description": "Port number."
+                        }
+                    }
+                }
+            }
+        },
+        "Sku": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "The SKU of the Search service. Valid values include: 'free': Shared service. 'basic': Dedicated service with up to 3 replicas. 'standard': Dedicated service with up to 12 partitions and 12 replicas. 'standard2': Similar to standard, but with more capacity per search unit. 'standard3': Offers maximum capacity per search unit with up to 12 partitions and 12 replicas (or up to 3 partitions with more indexes if you also set the hostingMode property to 'highDensity').",
+                    "enum": [
+                        "free",
+                        "basic",
+                        "standard",
+                        "standard2",
+                        "standard3"
+                    ],
+                    "x-ms-enum": {
+                        "name": "SkuName",
+                        "modelAsString": false
+                    }
+                }
+            },
+            "description": "Defines the SKU of an Azure Search Service, which determines price tier and capacity limits."
+        },
+        "SearchServiceProperties": {
+            "properties": {
+                "replicaCount": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 1,
+                    "maximum": 12,
+                    "default": 1,
+                    "description": "The number of replicas in the Search service. If specified, it must be a value between 1 and 12 inclusive for standard SKUs or between 1 and 3 inclusive for basic SKU."
+                },
+                "partitionCount": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 1,
+                    "maximum": 12,
+                    "default": 1,
+                    "description": "The number of partitions in the Search service; if specified, it can be 1, 2, 3, 4, 6, or 12. Values greater than 1 are only valid for standard SKUs. For 'standard3' services with hostingMode set to 'highDensity', the allowed values are between 1 and 3."
+                },
+                "hostingMode": {
+                    "type": "string",
+                    "default": "default",
+                    "description": "Applicable only for the standard3 SKU. You can set this property to enable up to 3 high density partitions that allow up to 1000 indexes, which is much higher than the maximum indexes allowed for any other SKU. For the standard3 SKU, the value is either 'default' or 'highDensity'. For all other SKUs, this value must be 'default'.",
+                    "enum": [
+                        "default",
+                        "highDensity"
+                    ],
+                    "x-ms-enum": {
+                        "name": "HostingMode",
+                        "modelAsString": false
+                    }
+                },
+                "status": {
+                    "readOnly": true,
+                    "type": "string",
+                    "description": "The status of the Search service. Possible values include: 'running': The Search service is running and no provisioning operations are underway. 'provisioning': The Search service is being provisioned or scaled up or down. 'deleting': The Search service is being deleted. 'degraded': The Search service is degraded. This can occur when the underlying search units are not healthy. The Search service is most likely operational, but performance might be slow and some requests might be dropped. 'disabled': The Search service is disabled. In this state, the service will reject all API requests. 'error': The Search service is in an error state. If your service is in the degraded, disabled, or error states, it means the Azure Search team is actively investigating the underlying issue. Dedicated services in these states are still chargeable based on the number of search units provisioned.",
+                    "enum": [
+                        "running",
+                        "provisioning",
+                        "deleting",
+                        "degraded",
+                        "disabled",
+                        "error"
+                    ],
+                    "x-ms-enum": {
+                        "name": "SearchServiceStatus",
+                        "modelAsString": false
+                    }
+                },
+                "statusDetails": {
+                    "readOnly": true,
+                    "type": "string",
+                    "description": "The details of the Search service status."
+                },
+                "provisioningState": {
+                    "readOnly": true,
+                    "type": "string",
+                    "description": "The state of the last provisioning operation performed on the Search service. Provisioning is an intermediate state that occurs while service capacity is being established. After capacity is set up, provisioningState changes to either 'succeeded' or 'failed'. Client applications can poll provisioning status (the recommended polling interval is from 30 seconds to one minute) by using the Get Search Service operation to see when an operation is completed. If you are using the free service, this value tends to come back as 'succeeded' directly in the call to Create Search service. This is because the free service uses capacity that is already set up.",
+                    "enum": [
+                        "succeeded",
+                        "provisioning",
+                        "failed"
+                    ],
+                    "x-ms-enum": {
+                        "name": "ProvisioningState",
+                        "modelAsString": false
+                    }
+                }
+            },
+            "description": "Properties of the Search service."
+        },
+        "Resource": {
+            "properties": {
+                "id": {
+                    "readOnly": true,
+                    "type": "string",
+                    "description": "The ID of the resource. This can be used with the Azure Resource Manager to link resources together.",
+                    "externalDocs": {
+                        "url": "https://aka.ms/search-linked-resources"
+                    }
+                },
+                "name": {
+                    "readOnly": true,
+                    "type": "string",
+                    "description": "The name of the resource.",
+                    "externalDocs": {
+                        "url": "https://aka.ms/search-naming-rules"
+                    }
+                },
+                "type": {
+                    "readOnly": true,
+                    "type": "string",
+                    "description": "The resource type."
+                },
+                "location": {
+                    "type": "string",
+                    "description": "The geographic location of the resource. This must be one of the supported and registered Azure Geo Regions (for example, West US, East US, Southeast Asia, and so forth).",
+                    "externalDocs": {
+                        "url": "https://aka.ms/search-rp-info"
+                    },
+                    "x-ms-mutability": [
+                        "create",
+                        "read"
+                    ]
+                },
+                "tags": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "description": "Tags to help categorize the resource in the Azure portal."
+                }
+            },
+            "required": [
+                "location"
+            ],
+            "description": "Base type for all Azure resources.",
+            "x-ms-azure-resource": true
+        },
+        "SearchService": {
+            "properties": {
+                "properties": {
+                    "x-ms-client-flatten": true,
+                    "$ref": "#/definitions/SearchServiceProperties",
+                    "description": "Properties of the Search service."
+                },
+                "sku": {
+                    "$ref": "#/definitions/Sku",
+                    "description": "The SKU of the Search Service, which determines price tier and capacity limits.",
+                    "externalDocs": {
+                        "url": "https://azure.microsoft.com/documentation/articles/search-sku-tier/"
+                    }
+                }
+            },
+            "required": [
+                "sku"
+            ],
+            "allOf": [
+                {
+                    "$ref": "#/definitions/Resource"
+                }
+            ],
+            "description": "Describes an Azure Search service and its current state."
         },
         "Error": {
             "type": "object",
